@@ -51,3 +51,14 @@ data_classpb <- data %>%
 data_classpb %>% glimpse
 
 write_csv(data_classpb, 'compas_clustering_classpb.csv')
+
+##### PREP AS REGRESSION #############
+data_regpb <- data %>% 
+  mutate(true_score = is_recid*9 + 1) %>%
+  mutate(predicted_score = decile_score) %>%
+  select(-is_recid, -decile_score) %>%
+  mutate(error = true_score - predicted_score) 
+
+data_regpb %>% glimpse
+
+write_csv(data_regpb, 'compas_clustering_regpb.csv')
