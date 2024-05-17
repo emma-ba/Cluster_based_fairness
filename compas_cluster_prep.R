@@ -42,6 +42,7 @@ data_classpb <- data %>%
   mutate(true_class = is_recid) %>%
   select(-is_recid) %>%
   mutate(predicted_class = ifelse(decile_score < thres, 0, 1)) %>% 
+  mutate(error = ifelse(predicted_class != true_class, 1, 0)) %>%
   mutate(TP = ifelse(predicted_class == 1 & true_class == 1, 1, 0)) %>%
   mutate(TN = ifelse(predicted_class == 0 & true_class == 0, 1, 0)) %>%
   mutate(FP = ifelse(predicted_class == 1 & true_class == 0, 1, 0)) %>%
