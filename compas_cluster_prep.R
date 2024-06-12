@@ -1,6 +1,8 @@
 ##### INIT #############
-setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
 library(tidyverse)
+library(corrplot)
+library(GGally)
+setwd(dirname(rstudioapi::getSourceEditorContext()$path)) 
 
 ##### LOAD & CHECK DATA #############
 data_orig <- read.csv('compas-scores-two-years.csv') %>% as_tibble
@@ -32,7 +34,6 @@ data <- data_orig %>%
   drop_na
 
 data %>% glimpse
-
 write_csv(data, 'compas_clustering_prep.csv')
 
 ##### PREP AS CLASSIFICATION #############
@@ -62,3 +63,37 @@ data_regpb <- data %>%
 data_regpb %>% glimpse
 
 write_csv(data_regpb, 'compas_clustering_regpb.csv')
+
+##########################
+##### BASIC DATA EXPLORATION #############
+data %>% 
+  mutate(sex = ifelse(sex=='Female', 1, 0)) %>%
+  mutate(charge = ifelse(c_charge_degree=='F', 1, 0)) %>%
+  select(-race, -c_charge_degree) %>%
+  rename(j_fel = juv_fel_count) %>%
+  rename(j_misd = juv_misd_count) %>%
+  rename(j_other = juv_other_count) %>%
+  rename(priors = priors_count) %>%
+  rename(recid = is_recid) %>%
+  rename(compas = decile_score) %>%
+  cor %>% 
+  corrplot.mixed(upper='ellipse', order='hclust')
+
+data %>% 
+  mutate(across(where(is.character), as.factor)) %>%
+  rename(j_fel = juv_fel_count) %>%
+  rename(j_misd = juv_misd_count) %>%
+  rename(j_other = juv_other_count) %>%
+  rename(priors = priors_count) %>%
+  rename(charge = c_charge_degree) %>%
+  rename(recid = is_recid) %>%
+  rename(compas = decile_score) %>%
+  ggpairs(mapping = aes(color = recid, alpha=0.1),
+          lower = list(continuous = wrap('points', size=0.01),
+                       combo = wrap('box_no_facet', size=0.01),
+                       mapping = aes(color = recid, alpha=0.1, size=0.01)),
+          upper = list(continuous = wrap('points', size=0.01),
+                       combo = wrap('facetdensity', size=0.01),
+                       mapping = aes(color = recid, alpha=0.1, size=0.01))
+  ) + theme_light()
+
